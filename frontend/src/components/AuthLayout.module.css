@@ -1,0 +1,121 @@
+.shell {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .shell {
+    grid-template-columns: minmax(360px, 42%) 1fr;
+  }
+}
+
+.brandPanel {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-8);
+  background: var(--gradient-brand);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 900px) {
+  .brandPanel {
+    display: flex;
+  }
+}
+
+.brandPanel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.14) 1px, transparent 0);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+.brandMark {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  position: relative;
+}
+
+.brandBody {
+  position: relative;
+  max-width: 380px;
+}
+
+.brandBody h2 {
+  color: #fff;
+  font-size: 32px;
+  line-height: 1.2;
+  margin-bottom: var(--space-3);
+}
+
+.brandBody p {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 15px;
+}
+
+.features {
+  list-style: none;
+  margin: var(--space-6) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.features li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.featureDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.brandFooter {
+  position: relative;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.formPanel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  background: var(--color-bg);
+}
+
+.formPanelInner {
+  width: 100%;
+  max-width: 400px;
+}
+
+.mobileBrand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--color-text);
+  margin-bottom: var(--space-6);
+}
+
+@media (min-width: 900px) {
+  .mobileBrand {
+    display: none;
+  }
+}
