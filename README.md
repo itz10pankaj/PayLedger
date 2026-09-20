@@ -8,31 +8,33 @@ Backend payment gateway and ledger system. See [`PayLedger — Technical Design 
 PayLedger/
 ├── frontend/   React + TypeScript (Vite)
 ├── gateway/    Node.js + Express — owns auth + user data, load balancing later
-└── backend/    Node.js + Express — payments, ledger, webhooks, reconciliation
+└── backend/    Node.js + Express — accounts + ledger today, payments/webhooks/reconciliation next
 ```
 
 Request path: **frontend → gateway → backend**. The frontend never calls the backend directly. **The gateway owns everything user-related** (the `users` table, create/update/verify) as well as auth — backend has nothing user-related in it; it only ever receives an already-identified request.
 
-**Auth flow (gateway):** `POST /auth/login` (email + password) → gateway checks the password itself against its own `users` table → on success, generates a 6-digit OTP and stores it in Redis (10 min TTL) → `POST /auth/verify-otp` (email + otp) → on match, gateway issues an opaque session token and stores it in Redis (1h TTL). Every later request carries that token as `Authorization: Bearer <token>`; the `authenticate` middleware looks it up in Redis and attaches the user to `req.user`, which the proxy forwards to the backend as `X-User-Id` / `X-User-Email` / `X-User-Role` headers — the backend trusts the gateway's check instead of re-verifying.
+**Auth flow (gateway):** `POST /auth/login` (phone + password) → gateway checks the password itself against its own `users` table → on success, generates a 6-digit OTP and stores it in Redis (10 min TTL) → `POST /auth/verify-otp` (phone + otp) → on match, gateway issues an opaque session token and stores it in Redis (1h TTL). Every later request carries that token as `Authorization: Bearer <token>`; the `authenticate` middleware looks it up in Redis and attaches the user to `req.user`, which the proxy forwards to the backend as `X-User-Id` / `X-User-Phone` / `X-User-Email` / `X-User-Role` headers — the backend trusts the gateway's check instead of re-verifying (via `common/middlewares/identifyUser.ts`).
+
+Signup is the same OTP pattern, but the account isn't created in Postgres until the phone OTP is verified — see `gateway/src/modules/user`.
 
 Round-robin load balancing across multiple backend instances plugs into `gateway/src/common/proxy/backendTargetPicker.ts` later — add more comma-separated `BACKEND_TARGETS` and it starts fanning out with no code change.
 
 ## Backend & gateway: module layout
 
-Both services are organized **module-wise** under `src/modules/`. Each module is self-contained and follows the same five pieces, using the `user` and `auth` modules (both in gateway) as the template for every module added after them — backend's `modules/` is currently empty, waiting for its first real module (`payment`, `account`, `ledger`, ...):
+Both services are organized **module-wise** under `src/modules/`. Each module is self-contained and follows the same five pieces:
 
 ```
 modules/<name>/
 ├── <name>.routes.ts       Express Router — wires paths to controller methods
 ├── <name>.controller.ts   HTTP layer only — parses request, calls a service, shapes response
 ├── services/               Business logic, one file per operation (create, get, ...) + index.ts barrel
-├── models/                  The table's schema only (plain TS interface matching its columns)
-└── repository/              The only layer allowed to talk to the DB (or, for auth, to Redis)
+├── models/                  A Sequelize Model — this IS the table schema, no separate SQL
+└── repository/              The only layer allowed to query the model directly (or, for auth, to Redis)
 ```
 
-Adding a new module:
-1. Copy the five-piece structure from `gateway/src/modules/user`.
-2. Register its router in that service's `src/modules/index.ts`.
+`ledger` is the one exception — it's infra other modules read/write through (backend's `account` module today, `payment`/`reconciliation` later), so it has no `routes.ts`/`controller.ts` of its own.
+
+Current modules: `gateway/src/modules/{user,auth}`, `backend/src/modules/{account,ledger}`. Adding a new one: copy the shape from `gateway/src/modules/user` (or `backend/src/modules/account`), then register its router in that service's `src/modules/index.ts` **and** import its model in that service's `src/models/index.ts` (so `npm run migration` picks it up — see below).
 
 Shared, cross-module code lives in `src/common/` (error handling, middlewares, utils) and `src/config/` (env, DB, Redis).
 
@@ -42,7 +44,7 @@ Shared, cross-module code lives in `src/common/` (error handling, middlewares, u
 src/
 ├── api/            Shared axios client (talks to the gateway only)
 ├── app/            Route table (app/routes.tsx)
-├── components/     Shared components (Layout, ProtectedRoute)
+├── components/     Shared components (Layout, ProtectedRoute, AuthLayout, OtpInput, Toast)
 └── features/
     └── <name>/
         ├── pages/       Route-level components
@@ -68,15 +70,21 @@ cd gateway && cp .env.example .env && npm install && npm run dev
 cd frontend && cp .env.example .env && npm install && npm run dev
 ```
 
-The gateway needs a Postgres `DATABASE_URL` (it owns the `users` table) and a Redis `REDIS_URL` (OTP + session storage) — a free hosted Postgres (Neon, Supabase) and Redis (Upstash) both work fine. Backend will need its own `DATABASE_URL` once it owns real tables (payments, ledger entries, ...) — it doesn't touch Postgres yet. Docker Compose for the full stack is not set up yet.
+Both gateway and backend need a Postgres `DATABASE_URL` and a Redis `REDIS_URL` — a free hosted Postgres (Neon, Supabase) and Redis (Upstash) both work fine. They currently point at the same Postgres database (different tables, no conflict) — that's fine for dev; production should give them separate databases.
 
-### Migrations
+### Schema (`npm run migration`)
 
-Migrations are plain SQL files under each service's own `migrations/` folder, run via [node-pg-migrate](https://github.com/salsita/node-pg-migrate) — it's a standalone CLI that connects directly to `DATABASE_URL`, independent of whether the app itself is running. It tracks which files have already run in its own `pgmigrations` table, so `up` only applies the ones that are pending.
+There's no hand-written SQL. **Sequelize models are the schema** — each `models/*.model.ts` file is a `Model.init({...})` call describing every column, and `npm run migration` (in either service, or from the repo root to do both) connects to `DATABASE_URL` and runs `sequelize.sync({ alter: true })`, which creates or updates every table to match whatever the models currently say. One command, works on any machine, and the schema can never drift from the code because there's only one place it's defined.
 
 ```bash
-cd gateway   # or backend, once it has its own tables
-npm run migration:create -- add-something   # scaffolds a new migration file
-npm run migration:up                        # applies every pending migration
-npm run migration:down                      # rolls back only the most recently applied one
+npm run migration          # from the repo root — syncs both gateway and backend
+# or, per service:
+cd gateway && npm run migration
+cd backend && npm run migration
 ```
+
+Two model conventions worth knowing:
+- Every table has `created_by` / `updated_by` (nullable `UUID`) for audit purposes — except `ledger_entries`, which only has `created_by`, since entries are append-only and never updated.
+- Enum-like columns (`role`, `type`, `status`) are `STRING` + `validate.isIn(...)`, not native Postgres `ENUM` types — Postgres can't auto-cast an existing column's default when `sync({ alter: true })` tries to convert it to a new `ENUM`, which breaks the "just run it anywhere" guarantee. `STRING` sidesteps that entirely.
+
+`ledger_entries.transaction_id` groups every entry belonging to one transfer (a payment writes payer-debit + payee-credit + platform-fee-credit as three entries sharing one `transaction_id` — querying by it is how you find every account involved). It has no FK yet since the `transactions` table doesn't exist until the `payment` module does.

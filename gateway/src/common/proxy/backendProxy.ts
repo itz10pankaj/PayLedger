@@ -6,10 +6,15 @@ import { nextBackendTarget } from './backendTargetPicker';
 // forwarded to a backend instance chosen by nextBackendTarget(). The
 // requesting user (attached by `authenticate`) rides along as headers,
 // so the backend trusts identity instead of re-checking it.
+//
+// Express strips the '/api' mount prefix before this middleware ever sees
+// the request (app.use('/api', ...) does that for every sub-middleware),
+// so req.url here is already e.g. '/v1/accounts' — pathRewrite has to add
+// '/api' back on, not match a prefix that's already gone.
 export const backendProxy = createProxyMiddleware({
   router: () => nextBackendTarget(),
   changeOrigin: true,
-  pathRewrite: { '^/api': '/api' },
+  pathRewrite: { '^/': '/api/' },
   on: {
     proxyReq: (proxyReq, req) => {
       const user = (req as Request).user;

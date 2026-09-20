@@ -1,10 +1,9 @@
 import bcrypt from 'bcryptjs';
 import { ApiError } from '../../../common/utils/ApiError';
-import { userRepository } from '../repository/user.repository';
-import { User } from '../models/user.model';
+import { userRepository, toSafeUser } from '../repository/user.repository';
 
 // Called by the auth module before it sends a login OTP.
-export async function verifyCredentials(phone: string, password: string): Promise<Omit<User, 'passwordHash'>> {
+export async function verifyCredentials(phone: string, password: string) {
   const user = await userRepository.findByPhone(phone);
   if (!user) {
     throw ApiError.unauthorized('Invalid phone number or password');
@@ -15,6 +14,5 @@ export async function verifyCredentials(phone: string, password: string): Promis
     throw ApiError.unauthorized('Invalid phone number or password');
   }
 
-  const { passwordHash: _passwordHash, ...safeUser } = user;
-  return safeUser;
+  return toSafeUser(user);
 }

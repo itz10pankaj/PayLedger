@@ -1,6 +1,8 @@
 import { Router } from 'express';
+import { accountRoutes } from './account/account.routes';
 
-// User/auth lives entirely in the gateway now — backend has nothing
-// user-related. First real module here will be something like `payment`
-// or `account`; each gets one line, same pattern as before.
+// `ledger` has no routes of its own — it's infra other modules read/write
+// through (account today, payment/reconciliation later).
 export const moduleRoutes = Router();
+
+moduleRoutes.use('/accounts', accountRoutes);

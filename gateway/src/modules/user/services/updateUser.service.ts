@@ -1,17 +1,15 @@
 import { ApiError } from '../../../common/utils/ApiError';
-import { userRepository } from '../repository/user.repository';
-import { User } from '../models/user.model';
+import { userRepository, toSafeUser } from '../repository/user.repository';
 
 export interface UpdateUserInput {
   name?: string;
   email?: string;
 }
 
-export async function updateUser(id: string, input: UpdateUserInput): Promise<Omit<User, 'passwordHash'>> {
-  const user = await userRepository.updateById(id, input);
+export async function updateUser(id: string, input: UpdateUserInput, updatedBy: string) {
+  const user = await userRepository.updateById(id, input, updatedBy);
   if (!user) {
     throw ApiError.notFound('User not found');
   }
-  const { passwordHash: _passwordHash, ...safeUser } = user;
-  return safeUser;
+  return toSafeUser(user);
 }

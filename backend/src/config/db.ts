@@ -1,10 +1,7 @@
-import { Pool } from 'pg';
+import { Sequelize } from 'sequelize';
 import { env } from './env';
 
-export const pool = new Pool({
-  connectionString: env.databaseUrl,
-});
-
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle Postgres client', err);
+export const sequelize = new Sequelize(env.databaseUrl, {
+  dialect: 'postgres',
+  logging: false,
 });

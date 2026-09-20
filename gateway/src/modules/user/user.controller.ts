@@ -29,7 +29,7 @@ export const userController = {
 
   update: asyncHandler(async (req: Request, res: Response) => {
     const { name, email } = req.body;
-    const user = await userService.updateUser(req.params.id, { name, email });
+    const user = await userService.updateUser(req.params.id, { name, email }, req.user!.userId);
     res.status(200).json({ data: user });
   }),
 };

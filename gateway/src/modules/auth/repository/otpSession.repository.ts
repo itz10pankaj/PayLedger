@@ -1,6 +1,6 @@
 import { redis } from '../../../config/redis';
 import { env } from '../../../config/env';
-import { User } from '../../user/models/user.model';
+import { SafeUser } from '../../user/repository/user.repository';
 import { SessionData } from '../models/auth.model';
 
 const otpKey = (phone: string) => `otp:${phone}`;
@@ -8,13 +8,13 @@ const sessionKey = (token: string) => `session:${token}`;
 
 interface StoredOtp {
   otp: string;
-  user: Omit<User, 'passwordHash'>;
+  user: SafeUser;
 }
 
 export const otpSessionRepository = {
   // Stores the OTP alongside the already-verified user, so verify-otp
   // doesn't need the password again to know who's logging in.
-  async saveOtp(phone: string, otp: string, user: Omit<User, 'passwordHash'>): Promise<void> {
+  async saveOtp(phone: string, otp: string, user: SafeUser): Promise<void> {
     await redis.set(otpKey(phone), JSON.stringify({ otp, user }), 'EX', env.otpTtlSeconds);
   },
 
