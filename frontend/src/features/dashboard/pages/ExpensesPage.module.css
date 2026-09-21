@@ -1,0 +1,93 @@
+.chartRoot {
+  /* Validated categorical palette (light mode) — fixed order, never
+     reassigned per filter. See dataviz skill references/palette.md. */
+  --series-1: #2a78d6; /* blue */
+  --series-2: #eb6834; /* orange */
+  --series-3: #1baf7a; /* aqua */
+  --series-4: #eda100; /* yellow */
+  --series-5: #e87ba4; /* magenta */
+  --series-6: #008300; /* green */
+  --series-7: #4a3aa7; /* violet */
+  --series-8: #e34948; /* red */
+}
+
+.wrapper {
+  padding: var(--space-6) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.monthInput {
+  width: auto;
+}
+
+.heroLabel {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.heroValue {
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: proportional-nums;
+}
+
+.barChart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.barRow {
+  display: grid;
+  grid-template-columns: 140px 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 4px 0;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.1s ease;
+}
+
+.barRow:hover {
+  background: var(--color-surface-sunken);
+}
+
+.barLabel {
+  font-size: 13px;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barTrack {
+  height: 20px;
+  background: var(--color-surface-sunken);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  min-width: 4px;
+}
+
+.barValue {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}

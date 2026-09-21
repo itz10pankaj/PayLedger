@@ -4,9 +4,14 @@ import { ProtectedRoute } from '../components/ProtectedRoute';
 import { LoginPage } from '../features/auth/pages/LoginPage';
 import { SignupPage } from '../features/user/pages/SignupPage';
 import { DashboardPage } from '../features/dashboard/pages/DashboardPage';
+import { TransactionsPage } from '../features/dashboard/pages/TransactionsPage';
+import { ExpensesPage } from '../features/dashboard/pages/ExpensesPage';
+import { AccountsPage } from '../features/account/pages/AccountsPage';
+import { AccountDetailPage } from '../features/account/pages/AccountDetailPage';
+import { SendMoneyPage } from '../features/payment/pages/SendMoneyPage';
 
-// New feature areas (payments, accounts, ledger, ...) get their own
-// <Route> here, pointing at that feature's own pages/ folder.
+// New feature areas get their own <Route> here, pointing at that
+// feature's own pages/ folder.
 export function AppRoutes() {
   return (
     <Routes>
@@ -18,6 +23,11 @@ export function AppRoutes() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/accounts" element={<AccountsPage />} />
+          <Route path="/accounts/:id" element={<AccountDetailPage />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
+          <Route path="/expenses" element={<ExpensesPage />} />
+          <Route path="/send" element={<SendMoneyPage />} />
         </Route>
       </Route>
     </Routes>

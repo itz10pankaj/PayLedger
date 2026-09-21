@@ -15,4 +15,6 @@ export const env = {
   port: Number(required('PORT', '4000')),
   databaseUrl: required('DATABASE_URL'),
   redisUrl: required('REDIS_URL', 'redis://localhost:6379'),
+  gatewayUrl: required('GATEWAY_URL', 'http://localhost:5000'),
+  accountOtpTtlSeconds: Number(required('ACCOUNT_OTP_TTL_SECONDS', '600')),
 };

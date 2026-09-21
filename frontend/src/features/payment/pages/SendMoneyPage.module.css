@@ -1,0 +1,56 @@
+.wrapper {
+  padding: var(--space-6) 0;
+}
+
+.formCard {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.subtitle {
+  margin-bottom: var(--space-5);
+}
+
+.amountPrefix {
+  display: flex;
+  align-items: center;
+}
+
+.prefix {
+  padding: 10px var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-right: none;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.amountPrefix .input {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.recipientFound {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-success);
+}
+
+.recipientError {
+  font-size: 13px;
+  color: var(--color-danger);
+}
+
+.pinInput {
+  letter-spacing: 8px;
+  font-size: 18px;
+  max-width: 120px;
+}
+
+.resultCard {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}

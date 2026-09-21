@@ -1,3 +1,94 @@
 .wrapper {
   padding: var(--space-6) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.balanceCard {
+  background: var(--gradient-brand);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-md);
+}
+
+.balanceLabel {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+  margin-bottom: var(--space-1);
+}
+
+.balanceValue {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.accountsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-3);
+}
+
+.accountCard {
+  display: block;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.accountCard:hover {
+  border-color: var(--color-primary);
+}
+
+.accountType {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  text-transform: capitalize;
+}
+
+.accountBalance {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: var(--space-1);
+}
+
+.addAccountCard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  min-height: 80px;
+}
+
+.addAccountCard:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }

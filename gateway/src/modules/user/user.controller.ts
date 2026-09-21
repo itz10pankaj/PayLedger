@@ -27,6 +27,13 @@ export const userController = {
     res.status(200).json({ data: user });
   }),
 
+  // Internal — called by backend to resolve a payment recipient's phone
+  // number to a user, not exposed for general client use.
+  getByPhone: asyncHandler(async (req: Request, res: Response) => {
+    const user = await userService.getUserByPhone(req.params.phone);
+    res.status(200).json({ data: user });
+  }),
+
   update: asyncHandler(async (req: Request, res: Response) => {
     const { name, email } = req.body;
     const user = await userService.updateUser(req.params.id, { name, email }, req.user!.userId);

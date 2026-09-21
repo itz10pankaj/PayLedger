@@ -22,6 +22,10 @@ export const ledgerRepository = {
     );
   },
 
+  async findById(id: string): Promise<LedgerEntry | null> {
+    return LedgerEntry.findByPk(id);
+  },
+
   async sumByAccountId(accountId: string): Promise<number> {
     const total = await LedgerEntry.sum('amountMinor', { where: { accountId } });
     return total ?? 0;

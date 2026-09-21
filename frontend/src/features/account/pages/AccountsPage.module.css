@@ -1,0 +1,112 @@
+.wrapper {
+  padding: var(--space-6) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+.accountCard {
+  position: relative;
+  display: block;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.accountCard:hover {
+  border-color: var(--color-primary);
+}
+
+.accountType {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  text-transform: capitalize;
+}
+
+.accountStatus {
+  font-size: 12px;
+  color: var(--color-text-subtle);
+  margin-top: var(--space-1);
+}
+
+.primaryBadge {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.typeOptions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+}
+
+.typeOption {
+  text-align: left;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.typeOption:hover {
+  border-color: var(--color-primary);
+}
+
+.typeOptionSelected {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.typeOptionTitle {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.typeOptionDesc {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.pinRow {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.pinRow .field {
+  flex: 1;
+}
+
+.pinInput {
+  letter-spacing: 8px;
+  font-size: 18px;
+  text-align: center;
+}
+
+.continueBtn {
+  margin-top: var(--space-4);
+}
+
+.resendBtn {
+  margin-top: var(--space-2);
+}
+
+.verifyActions {
+  display: flex;
+  gap: var(--space-2);
+}

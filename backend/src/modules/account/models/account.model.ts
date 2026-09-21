@@ -1,7 +1,9 @@
 import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from '../../../config/db';
 
-export type AccountType = 'payer' | 'payee' | 'merchant';
+// 'platform' is never created through the public API (see account.controller.ts) —
+// it's a single internal account the payment module credits MDR fees to.
+export type AccountType = 'payer' | 'payee' | 'merchant' | 'platform';
 export type AccountStatus = 'active' | 'frozen' | 'closed';
 
 // This IS the schema — sequelize.sync() (run via `npm run migration`)
@@ -12,6 +14,13 @@ interface AccountAttributes {
   userId: string;
   type: AccountType;
   status: AccountStatus;
+  // Per-account transaction PIN (like a real bank-linked UPI PIN, not the
+  // login password) — hashed, never the raw 4 digits. Null on accounts
+  // created before this existed; those can't send money until a PIN is set.
+  tPinHash: string | null;
+  // Exactly one of a user's accounts is primary at a time — it's where an
+  // incoming payment-by-phone lands, and what Send Money defaults to.
+  isPrimary: boolean;
   createdBy: string | null;
   updatedBy: string | null;
   createdAt: Date;
@@ -20,7 +29,7 @@ interface AccountAttributes {
 
 type AccountCreationAttributes = Optional<
   AccountAttributes,
-  'id' | 'status' | 'createdBy' | 'updatedBy' | 'createdAt' | 'updatedAt'
+  'id' | 'status' | 'tPinHash' | 'isPrimary' | 'createdBy' | 'updatedBy' | 'createdAt' | 'updatedAt'
 >;
 
 export class Account extends Model<AccountAttributes, AccountCreationAttributes> implements AccountAttributes {
@@ -28,6 +37,8 @@ export class Account extends Model<AccountAttributes, AccountCreationAttributes>
   declare userId: string;
   declare type: AccountType;
   declare status: AccountStatus;
+  declare tPinHash: string | null;
+  declare isPrimary: boolean;
   declare createdBy: string | null;
   declare updatedBy: string | null;
   declare readonly createdAt: Date;
@@ -52,13 +63,24 @@ Account.init(
     type: {
       type: DataTypes.STRING(20),
       allowNull: false,
-      validate: { isIn: [['payer', 'payee', 'merchant']] },
+      validate: { isIn: [['payer', 'payee', 'merchant', 'platform']] },
     },
     status: {
       type: DataTypes.STRING(20),
       allowNull: false,
       defaultValue: 'active',
       validate: { isIn: [['active', 'frozen', 'closed']] },
+    },
+    tPinHash: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      field: 't_pin_hash',
+    },
+    isPrimary: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: 'is_primary',
     },
     createdBy: {
       type: DataTypes.UUID,

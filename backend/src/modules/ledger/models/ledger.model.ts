@@ -9,11 +9,10 @@ import { sequelize } from '../../../config/db';
 // stored anywhere.
 //
 // transaction_id groups every entry belonging to one transfer. A payment
-// writes three entries at once (payer debit, payee credit, platform fee
-// credit — see the technical design doc), so there's no single "other
+// writes up to three entries at once (payer debit, payee credit, platform
+// fee credit — see the technical design doc), so there's no single "other
 // account" a single entry can point at; querying by transaction_id is how
-// you find every account involved in a given transfer. FK to a
-// `transactions` table gets added once the payment module creates one.
+// you find every account involved in a given transfer.
 //
 // No updated_by column: entries are append-only, nothing is ever updated.
 interface LedgerEntryAttributes {
@@ -56,6 +55,7 @@ LedgerEntry.init(
       type: DataTypes.UUID,
       allowNull: false,
       field: 'transaction_id',
+      references: { model: 'transactions', key: 'id' },
     },
     amountMinor: {
       type: DataTypes.BIGINT,
