@@ -11,5 +11,5 @@ userRoutes.post('/signup/verify', userController.signupVerify); // creates the u
 // while gateway is the only thing that can reach backend and vice versa in
 // dev, needs locking down before production.
 userRoutes.get('/by-phone/:phone', userController.getByPhone);
-userRoutes.get('/:id', authenticate, userController.getById);
-userRoutes.patch('/:id', authenticate, userController.update);
+userRoutes.get('/me', authenticate, userController.getMe);
+userRoutes.patch('/me', authenticate, userController.updateMe);

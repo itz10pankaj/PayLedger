@@ -6,11 +6,11 @@ import { toSafeAccount } from './repository/account.repository';
 
 export const accountController = {
   startCreate: asyncHandler(async (req: Request, res: Response) => {
-    const { type } = req.body;
+    const { type, nickname } = req.body;
     if (!type) {
       throw ApiError.badRequest('type is required');
     }
-    const result = await accountService.startAccountCreation(req.user!.userId, req.user!.phone, type);
+    const result = await accountService.startAccountCreation(req.user!.userId, req.user!.phone, type, nickname);
     res.status(200).json({ data: result });
   }),
 
@@ -33,8 +33,14 @@ export const accountController = {
     res.status(200).json({ data: toSafeAccount(account) });
   }),
 
-  getBalance: asyncHandler(async (req: Request, res: Response) => {
-    const balance = await accountService.getBalance(req.params.id, req.user!.userId);
+  // The only place a balance figure leaves the server — requires the
+  // account's own T-PIN, same as a real UPI app's "Check Balance".
+  checkBalance: asyncHandler(async (req: Request, res: Response) => {
+    const { tPin } = req.body;
+    if (!tPin) {
+      throw ApiError.badRequest('tPin is required');
+    }
+    const balance = await accountService.checkBalance(req.params.id, req.user!.userId, tPin);
     res.status(200).json({ data: balance });
   }),
 
@@ -57,5 +63,11 @@ export const accountController = {
     }
     await accountService.setTPin(req.params.id, req.user!.userId, { newTPin, currentTPin });
     res.status(200).json({ data: { message: 'T-PIN updated' } });
+  }),
+
+  setNickname: asyncHandler(async (req: Request, res: Response) => {
+    const { nickname } = req.body;
+    await accountService.setNickname(req.params.id, req.user!.userId, nickname ?? null);
+    res.status(200).json({ data: { message: 'Nickname updated' } });
   }),
 };

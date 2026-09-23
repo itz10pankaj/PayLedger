@@ -1,4 +1,4 @@
-import type { AccountWithBalance } from '../../account/types/account.types';
+import type { AccountSummary } from '../../account/types/account.types';
 
 export interface TaggedEntry {
   id: string;
@@ -11,8 +11,7 @@ export interface TaggedEntry {
 }
 
 export interface DashboardOverview {
-  accounts: AccountWithBalance[];
-  totalBalanceMinor: number;
+  accounts: AccountSummary[];
   recentTransactions: TaggedEntry[];
 }
 
@@ -25,4 +24,29 @@ export interface MonthlyExpenses {
   month: string;
   totalMinor: number;
   byCategory: CategoryTotal[];
+}
+
+export interface BudgetCategory {
+  category: string;
+  limitMinor: number;
+  spentMinor: number;
+}
+
+export interface BudgetOverview {
+  month: string;
+  totalLimitMinor: number;
+  totalSpentMinor: number;
+  categories: BudgetCategory[];
+}
+
+export interface HealthInsight {
+  tone: 'good' | 'warning';
+  text: string;
+}
+
+export interface FinancialHealth {
+  month: string;
+  score: number | null;
+  label: string;
+  insights: HealthInsight[];
 }

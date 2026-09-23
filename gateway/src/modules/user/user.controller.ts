@@ -22,8 +22,14 @@ export const userController = {
     res.status(201).json({ data: user });
   }),
 
-  getById: asyncHandler(async (req: Request, res: Response) => {
-    const user = await userService.getUserById(req.params.id);
+  // No :id param anywhere here — always the caller's own record. An
+  // earlier version took an arbitrary :id with only `authenticate`
+  // guarding it, which let any logged-in user view or edit *anyone's*
+  // profile just by knowing their user id. There was no legitimate use
+  // for that (nothing in this app looks up another user's profile), so
+  // the fix is to remove the capability rather than add an ownership check.
+  getMe: asyncHandler(async (req: Request, res: Response) => {
+    const user = await userService.getUserById(req.user!.userId);
     res.status(200).json({ data: user });
   }),
 
@@ -34,9 +40,9 @@ export const userController = {
     res.status(200).json({ data: user });
   }),
 
-  update: asyncHandler(async (req: Request, res: Response) => {
+  updateMe: asyncHandler(async (req: Request, res: Response) => {
     const { name, email } = req.body;
-    const user = await userService.updateUser(req.params.id, { name, email }, req.user!.userId);
+    const user = await userService.updateUser(req.user!.userId, { name, email }, req.user!.userId);
     res.status(200).json({ data: user });
   }),
 };

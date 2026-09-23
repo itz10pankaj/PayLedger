@@ -5,6 +5,37 @@
   gap: var(--space-5);
 }
 
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.headerRow h1 {
+  margin: 0;
+}
+
+.headerRow button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: auto;
+  flex-shrink: 0;
+}
+
+.formHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.formHeader h2 {
+  margin: 0;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -13,40 +44,98 @@
 
 .accountCard {
   position: relative;
-  display: block;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
   border-radius: var(--radius-md);
   padding: var(--space-4);
-  box-shadow: var(--shadow-sm);
+  color: #fff;
+  min-height: 100px;
 }
 
-.accountCard:hover {
-  border-color: var(--color-primary);
+.accountCardPersonal {
+  background: var(--gradient-personal);
 }
 
-.accountType {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  text-transform: capitalize;
+.accountCardBusiness {
+  background: var(--gradient-business);
 }
 
-.accountStatus {
-  font-size: 12px;
-  color: var(--color-text-subtle);
-  margin-top: var(--space-1);
+.accountCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.primaryBadge {
-  position: absolute;
-  top: var(--space-3);
-  right: var(--space-3);
-  font-size: 11px;
+.accountIcon {
+  opacity: 0.9;
+}
+
+.primaryPill {
+  font-size: 10px;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 999px;
-  background: var(--color-primary-soft);
-  color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.accountType {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: var(--space-3);
+}
+
+.accountMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: capitalize;
+  margin-top: 2px;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.status_active {
+  background: #3ddc84;
+}
+
+.status_frozen {
+  background: #ffc95c;
+}
+
+.status_closed {
+  background: #ff6b6b;
+}
+
+.accountActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.accountActionLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  opacity: 0.9;
+}
+
+.accountActionLink:hover {
+  opacity: 1;
+  text-decoration: none;
 }
 
 .typeOptions {
@@ -56,6 +145,9 @@
 }
 
 .typeOption {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
   text-align: left;
   padding: var(--space-4);
   border: 1px solid var(--color-border-strong);
@@ -73,6 +165,18 @@
   box-shadow: 0 0 0 1px var(--color-primary);
 }
 
+.typeOptionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
 .typeOptionTitle {
   font-weight: 600;
   margin-bottom: 4px;
@@ -83,19 +187,8 @@
   color: var(--color-text-muted);
 }
 
-.pinRow {
-  display: flex;
-  gap: var(--space-3);
-}
-
-.pinRow .field {
-  flex: 1;
-}
-
-.pinInput {
-  letter-spacing: 8px;
-  font-size: 18px;
-  text-align: center;
+.nicknameField {
+  margin-top: var(--space-4);
 }
 
 .continueBtn {

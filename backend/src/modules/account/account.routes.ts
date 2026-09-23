@@ -10,7 +10,8 @@ accountRoutes.post('/start', accountController.startCreate); // sends OTP, no ac
 accountRoutes.post('/verify', accountController.verifyCreate); // creates the account on success
 accountRoutes.get('/', accountController.list);
 accountRoutes.get('/:id', accountController.getById);
-accountRoutes.get('/:id/balance', accountController.getBalance);
+accountRoutes.post('/:id/check-balance', accountController.checkBalance); // POST — needs a tPin body
 accountRoutes.get('/:id/ledger', accountController.getLedger);
 accountRoutes.patch('/:id/primary', accountController.setPrimary);
 accountRoutes.patch('/:id/pin', accountController.setPin);
+accountRoutes.patch('/:id/nickname', accountController.setNickname);

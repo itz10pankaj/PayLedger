@@ -21,6 +21,10 @@ interface AccountAttributes {
   // Exactly one of a user's accounts is primary at a time — it's where an
   // incoming payment-by-phone lands, and what Send Money defaults to.
   isPrimary: boolean;
+  // User-chosen label ("Shop takings", "Rent") so two accounts of the same
+  // type are distinguishable in the UI — falls back to a generic
+  // "Personal •••• <id suffix>" display when null.
+  nickname: string | null;
   createdBy: string | null;
   updatedBy: string | null;
   createdAt: Date;
@@ -29,7 +33,7 @@ interface AccountAttributes {
 
 type AccountCreationAttributes = Optional<
   AccountAttributes,
-  'id' | 'status' | 'tPinHash' | 'isPrimary' | 'createdBy' | 'updatedBy' | 'createdAt' | 'updatedAt'
+  'id' | 'status' | 'tPinHash' | 'isPrimary' | 'nickname' | 'createdBy' | 'updatedBy' | 'createdAt' | 'updatedAt'
 >;
 
 export class Account extends Model<AccountAttributes, AccountCreationAttributes> implements AccountAttributes {
@@ -39,6 +43,7 @@ export class Account extends Model<AccountAttributes, AccountCreationAttributes>
   declare status: AccountStatus;
   declare tPinHash: string | null;
   declare isPrimary: boolean;
+  declare nickname: string | null;
   declare createdBy: string | null;
   declare updatedBy: string | null;
   declare readonly createdAt: Date;
@@ -81,6 +86,10 @@ Account.init(
       allowNull: false,
       defaultValue: false,
       field: 'is_primary',
+    },
+    nickname: {
+      type: DataTypes.STRING(40),
+      allowNull: true,
     },
     createdBy: {
       type: DataTypes.UUID,

@@ -6,3 +6,4 @@ import '../modules/account/models/account.model'; // no deps
 import '../modules/payment/models/transaction.model'; // FK -> accounts
 import '../modules/ledger/models/ledger.model'; // FK -> accounts, transactions
 import '../modules/dashboard/models/ledgerEntryTag.model'; // FK -> ledger_entries
+import '../modules/dashboard/models/budget.model'; // no deps

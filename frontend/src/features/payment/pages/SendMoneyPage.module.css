@@ -11,29 +11,33 @@
   margin-bottom: var(--space-5);
 }
 
-.amountPrefix {
+.recipientRow {
   display: flex;
   align-items: center;
-}
-
-.prefix {
-  padding: 10px var(--space-3);
-  border: 1px solid var(--color-border-strong);
-  border-right: none;
-  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  gap: var(--space-3);
+  padding: var(--space-3);
   background: var(--color-surface-sunken);
-  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  margin-top: calc(var(--space-4) * -1);
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
   font-size: 14px;
+  flex-shrink: 0;
 }
 
-.amountPrefix .input {
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-}
-
-.recipientFound {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-success);
+.recipientName {
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .recipientError {
@@ -41,10 +45,41 @@
   color: var(--color-danger);
 }
 
-.pinInput {
-  letter-spacing: 8px;
-  font-size: 18px;
-  max-width: 120px;
+.amountDisplay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: var(--space-5) 0;
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-md);
+}
+
+.amountCurrency {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.amountInput {
+  border: none;
+  background: transparent;
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--color-text);
+  width: 180px;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+.amountInput:focus {
+  outline: none;
+}
+
+.amountInput::-webkit-outer-spin-button,
+.amountInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .resultCard {

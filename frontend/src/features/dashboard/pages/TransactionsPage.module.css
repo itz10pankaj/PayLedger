@@ -7,10 +7,27 @@
 
 .filters {
   display: flex;
+  align-items: flex-end;
   gap: var(--space-3);
   flex-wrap: wrap;
 }
 
 .filters .field {
   min-width: 160px;
+}
+
+.dateRangeDivider {
+  align-self: center;
+  font-size: 12px;
+  color: var(--color-text-subtle);
+  padding-bottom: 10px;
+}
+
+.tableCard {
+  width: 100%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-5);
 }

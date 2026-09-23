@@ -13,24 +13,217 @@
   gap: var(--space-3);
 }
 
-.meta {
-  text-transform: capitalize;
+.headerActions {
   display: flex;
   align-items: center;
   gap: var(--space-2);
 }
 
-.primaryBadge {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: none;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--color-primary-soft);
-  color: var(--color-primary);
+.balanceCard {
+  position: relative;
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  color: #fff;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
 }
 
-.headerActions {
+.balanceCardPersonal {
+  background: var(--gradient-personal);
+}
+
+.balanceCardBusiness {
+  background: var(--gradient-business);
+}
+
+.balanceCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.12) 1px, transparent 0);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
+.cardTop {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardType {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.primaryPill {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.statusPill {
+  position: relative;
+  display: inline-block;
+  margin-top: var(--space-1);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: capitalize;
+}
+
+.renameLink {
+  position: relative;
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: var(--space-2);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.nicknameForm {
+  position: relative;
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.nicknameInput {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+  max-width: 220px;
+}
+
+.nicknameInput::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.balanceLabel {
+  position: relative;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: var(--space-5);
+}
+
+.balanceMaskedRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.balanceValue {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.checkBtn {
+  background: rgba(255, 255, 255, 0.18);
+  border: none;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checkBtn:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.pinPrompt {
+  position: relative;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.pinPromptLabel {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: var(--space-2);
+}
+
+.pinPromptRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.pinPromptActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.ghostBtn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.solidBtn {
+  background: #fff;
+  color: var(--color-primary);
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.solidBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.depositRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  max-width: 320px;
+}
+
+.depositRow .input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.depositRow .input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.prefix {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+
+.pinHeading {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -47,41 +240,4 @@
 .pinForm .field {
   flex: 1;
   min-width: 160px;
-}
-
-.balanceCard {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  box-shadow: var(--shadow-sm);
-}
-
-.balanceLabel {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-1);
-}
-
-.balanceValue {
-  font-size: 32px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.depositRow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-top: var(--space-4);
-  max-width: 320px;
-}
-
-.depositRow .input {
-  flex: 1;
-}
-
-.prefix {
-  color: var(--color-text-muted);
-  font-size: 14px;
 }

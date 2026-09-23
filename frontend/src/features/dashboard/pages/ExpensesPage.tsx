@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useToast } from '../../../components/Toast/ToastProvider';
 import { formatRupees } from '../../../utils/money';
+import { colorForCategory } from '../../../utils/categoryColor';
 import { dashboardService } from '../services/dashboard.service';
 import type { MonthlyExpenses } from '../types/dashboard.types';
 import styles from './ExpensesPage.module.css';
-
-const SERIES_COUNT = 8;
 
 function currentMonth(): string {
   const now = new Date();
@@ -33,20 +32,10 @@ export function ExpensesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [month]);
 
-  // Color follows the category name, assigned once by its fixed position
-  // in the categories list — never reassigned when the filter changes.
-  // Categories past the 8 validated slots fall back to muted ink rather
-  // than generating a new (unvalidated) hue.
-  function colorFor(category: string): string {
-    const index = categories.indexOf(category);
-    if (index < 0 || index >= SERIES_COUNT) return 'var(--color-text-subtle)';
-    return `var(--series-${index + 1})`;
-  }
-
   const maxTotal = expenses ? Math.max(...expenses.byCategory.map((c) => c.totalMinor), 1) : 1;
 
   return (
-    <div className={`container ${styles.wrapper} ${styles.chartRoot}`}>
+    <div className={`container ${styles.wrapper}`}>
       <div className={styles.headerRow}>
         <h1>Expenses</h1>
         <input
@@ -78,7 +67,7 @@ export function ExpensesPage() {
                     className={styles.barFill}
                     style={{
                       width: `${(c.totalMinor / maxTotal) * 100}%`,
-                      background: colorFor(c.category),
+                      background: colorForCategory(c.category, categories),
                     }}
                   />
                 </div>

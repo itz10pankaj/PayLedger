@@ -28,6 +28,7 @@ export async function verifyAccountCreation(userId: string, otp: string, tPin: s
     type: pending.type,
     tPinHash,
     isPrimary: isFirstAccount,
+    nickname: pending.nickname,
     createdBy: userId,
   });
 

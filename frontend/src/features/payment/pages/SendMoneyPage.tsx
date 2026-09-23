@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../../components/Toast/ToastProvider';
+import { OtpInput } from '../../../components/OtpInput';
 import { formatRupees } from '../../../utils/money';
 import { accountService } from '../../account/services/account.service';
 import { paymentService } from '../services/payment.service';
@@ -80,7 +81,7 @@ export function SendMoneyPage() {
     }
   }
 
-  const canSubmit = accounts.length > 0 && !!recipientName && tPin.length === 4;
+  const canSubmit = accounts.length > 0 && !!recipientName && tPin.length === 4 && Number(amount) > 0;
 
   return (
     <div className={`container ${styles.wrapper}`}>
@@ -100,11 +101,12 @@ export function SendMoneyPage() {
               {accounts.length === 0 && <option value="">No accounts yet</option>}
               {accounts.map((a) => (
                 <option key={a.id} value={a.id}>
-                  {a.type} account{a.isPrimary ? ' (primary)' : ''}
+                  {a.type === 'merchant' ? 'Business' : 'Personal'} account{a.isPrimary ? ' (primary)' : ''}
                 </option>
               ))}
             </select>
           </div>
+
           <div className="field">
             <label htmlFor="toPhone">To mobile number</label>
             <input
@@ -116,40 +118,47 @@ export function SendMoneyPage() {
               onChange={(e) => setToPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
               required
             />
-            {checkingRecipient && <span className="text-subtle">Checking…</span>}
-            {recipientName && <span className={styles.recipientFound}>Sending to {recipientName}</span>}
-            {recipientError && <span className={styles.recipientError}>{recipientError}</span>}
           </div>
+
+          {(checkingRecipient || recipientName || recipientError) && (
+            <div className={styles.recipientRow}>
+              {checkingRecipient && <span className="text-subtle">Checking…</span>}
+              {recipientName && (
+                <>
+                  <span className={styles.avatar}>{recipientName.charAt(0).toUpperCase()}</span>
+                  <div>
+                    <div className={styles.recipientName}>{recipientName}</div>
+                    <div className="text-subtle">Sending to this PayLedger user</div>
+                  </div>
+                </>
+              )}
+              {recipientError && <span className={styles.recipientError}>{recipientError}</span>}
+            </div>
+          )}
+
           <div className="field">
             <label htmlFor="amount">Amount</label>
-            <div className={styles.amountPrefix}>
-              <span className={styles.prefix}>₹</span>
+            <div className={styles.amountDisplay}>
+              <span className={styles.amountCurrency}>₹</span>
               <input
                 id="amount"
                 type="number"
                 min="1"
                 step="0.01"
-                className="input"
-                placeholder="0.00"
+                className={styles.amountInput}
+                placeholder="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 required
               />
             </div>
           </div>
+
           <div className="field">
-            <label htmlFor="tPin">T-PIN for this account</label>
-            <input
-              id="tPin"
-              type="password"
-              inputMode="numeric"
-              maxLength={4}
-              className={`input ${styles.pinInput}`}
-              value={tPin}
-              onChange={(e) => setTPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-              required
-            />
+            <label>T-PIN for this account</label>
+            <OtpInput value={tPin} onChange={setTPin} length={4} masked />
           </div>
+
           <button type="submit" className="btn btn-primary" disabled={submitting || !canSubmit}>
             {submitting ? 'Sending…' : 'Send'}
           </button>

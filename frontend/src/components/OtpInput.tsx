@@ -2,18 +2,25 @@ import { useEffect, useRef, useState } from 'react';
 import type { ClipboardEvent, KeyboardEvent } from 'react';
 import styles from './OtpInput.module.css';
 
-const LENGTH = 6;
+interface OtpInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  length?: number;
+  masked?: boolean;
+}
 
-export function OtpInput({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  const [digits, setDigits] = useState<string[]>(() => Array.from({ length: LENGTH }, (_, i) => value[i] ?? ''));
+// Generalized beyond just OTP — also used as the boxed T-PIN input
+// (length=4, masked) so PIN entry gets the same polished UI as a code.
+export function OtpInput({ value, onChange, length = 6, masked = false }: OtpInputProps) {
+  const [digits, setDigits] = useState<string[]>(() => Array.from({ length }, (_, i) => value[i] ?? ''));
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   // The parent resets `value` to '' after a resend — clear the boxes to match.
   useEffect(() => {
     if (value === '') {
-      setDigits(Array(LENGTH).fill(''));
+      setDigits(Array(length).fill(''));
     }
-  }, [value]);
+  }, [value, length]);
 
   function commit(next: string[]) {
     setDigits(next);
@@ -25,7 +32,7 @@ export function OtpInput({ value, onChange }: { value: string; onChange: (value:
     const next = [...digits];
     next[index] = digit;
     commit(next);
-    if (digit && index < LENGTH - 1) {
+    if (digit && index < length - 1) {
       inputRefs.current[index + 1]?.focus();
     }
   }
@@ -38,13 +45,13 @@ export function OtpInput({ value, onChange }: { value: string; onChange: (value:
 
   function handlePaste(e: ClipboardEvent<HTMLInputElement>) {
     e.preventDefault();
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, LENGTH).split('');
-    const next = Array(LENGTH).fill('');
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, length).split('');
+    const next = Array(length).fill('');
     pasted.forEach((d, i) => {
       next[i] = d;
     });
     commit(next);
-    inputRefs.current[Math.min(pasted.length, LENGTH - 1)]?.focus();
+    inputRefs.current[Math.min(pasted.length, length - 1)]?.focus();
   }
 
   return (
@@ -56,6 +63,7 @@ export function OtpInput({ value, onChange }: { value: string; onChange: (value:
             inputRefs.current[index] = el;
           }}
           className={styles.box}
+          type={masked ? 'password' : 'text'}
           inputMode="numeric"
           maxLength={1}
           value={digit}

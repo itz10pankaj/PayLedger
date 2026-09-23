@@ -17,6 +17,7 @@ export const accountRepository = {
     type: AccountType;
     tPinHash: string;
     isPrimary: boolean;
+    nickname: string | null;
     createdBy: string | null;
   }): Promise<Account> {
     return Account.create({
@@ -24,6 +25,7 @@ export const accountRepository = {
       type: input.type,
       tPinHash: input.tPinHash,
       isPrimary: input.isPrimary,
+      nickname: input.nickname,
       createdBy: input.createdBy,
     });
   },
@@ -61,6 +63,10 @@ export const accountRepository = {
 
   async setTPinHash(accountId: string, tPinHash: string, updatedBy: string): Promise<void> {
     await Account.update({ tPinHash, updatedBy }, { where: { id: accountId } });
+  },
+
+  async setNickname(accountId: string, nickname: string | null, updatedBy: string): Promise<void> {
+    await Account.update({ nickname, updatedBy }, { where: { id: accountId } });
   },
 
   // Singleton — every MDR fee is credited to this one account.

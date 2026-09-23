@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { TransactionList } from '../../../components/TransactionList';
+import { OtpInput } from '../../../components/OtpInput';
 import { useToast } from '../../../components/Toast/ToastProvider';
 import { formatRupees } from '../../../utils/money';
+import { accountDisplayName } from '../../../utils/accountDisplay';
+import { IconUser, IconBuilding, IconLock } from '../../../components/icons';
 import { accountService } from '../services/account.service';
 import { dashboardService } from '../../dashboard/services/dashboard.service';
 import { paymentService } from '../../payment/services/payment.service';
@@ -15,7 +18,10 @@ export function AccountDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { showToast } = useToast();
   const [account, setAccount] = useState<Account | null>(null);
-  const [balanceMinor, setBalanceMinor] = useState(0);
+  const [balanceMinor, setBalanceMinor] = useState<number | null>(null);
+  const [checkingBalance, setCheckingBalance] = useState(false);
+  const [balancePin, setBalancePin] = useState('');
+  const [verifyingBalance, setVerifyingBalance] = useState(false);
   const [transactions, setTransactions] = useState<TaggedEntry[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,17 +31,19 @@ export function AccountDetailPage() {
   const [currentPin, setCurrentPin] = useState('');
   const [newPin, setNewPin] = useState('');
   const [savingPin, setSavingPin] = useState(false);
+  const [editingNickname, setEditingNickname] = useState(false);
+  const [nickname, setNickname] = useState('');
+  const [savingNickname, setSavingNickname] = useState(false);
 
   function load() {
     if (!id) return Promise.resolve();
     return Promise.all([
       accountService.list().then((accounts) => accounts.find((a) => a.id === id) ?? null),
-      accountService.getBalance(id),
       dashboardService.getTransactions({ accountId: id, limit: 50 }),
       dashboardService.getCategories(),
-    ]).then(([acc, balance, tx, cats]) => {
+    ]).then(([acc, tx, cats]) => {
       setAccount(acc);
-      setBalanceMinor(balance.balanceMinor);
+      setNickname(acc?.nickname ?? '');
       setTransactions(tx.transactions);
       setCategories(cats);
     });
@@ -59,6 +67,21 @@ export function AccountDetailPage() {
     }
   }
 
+  async function handleCheckBalance() {
+    if (!id) return;
+    setVerifyingBalance(true);
+    try {
+      const result = await accountService.checkBalance(id, balancePin);
+      setBalanceMinor(result.balanceMinor);
+      setCheckingBalance(false);
+      setBalancePin('');
+    } catch {
+      showToast('Incorrect T-PIN', 'error');
+    } finally {
+      setVerifyingBalance(false);
+    }
+  }
+
   async function handleDeposit(e: FormEvent) {
     e.preventDefault();
     if (!id) return;
@@ -68,6 +91,7 @@ export function AccountDetailPage() {
       await paymentService.deposit(id, amountMinor);
       showToast('Money added', 'success');
       setDepositAmount('');
+      setBalanceMinor(null); // re-check to see the new amount, don't guess it client-side
       await load();
     } catch {
       showToast('Could not add money', 'error');
@@ -106,6 +130,22 @@ export function AccountDetailPage() {
     }
   }
 
+  async function handleSaveNickname(e: FormEvent) {
+    e.preventDefault();
+    if (!id) return;
+    setSavingNickname(true);
+    try {
+      await accountService.setNickname(id, nickname || null);
+      showToast('Nickname updated', 'success');
+      setEditingNickname(false);
+      await load();
+    } catch {
+      showToast('Could not update nickname', 'error');
+    } finally {
+      setSavingNickname(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="container">
@@ -125,15 +165,14 @@ export function AccountDetailPage() {
     );
   }
 
+  const isBusiness = account.type === 'merchant';
+
   return (
     <div className={`container ${styles.wrapper}`}>
       <div className={styles.headerRow}>
-        <div>
-          <h1 className={styles.meta}>
-            {account.type} account {account.isPrimary && <span className={styles.primaryBadge}>Primary</span>}
-          </h1>
-          <span className="text-muted">{account.status}</span>
-        </div>
+        <Link to="/accounts" className="btn-link">
+          ← All accounts
+        </Link>
         <div className={styles.headerActions}>
           {!account.isPrimary && (
             <button type="button" className="btn" onClick={handleSetPrimary} disabled={settingPrimary}>
@@ -146,9 +185,84 @@ export function AccountDetailPage() {
         </div>
       </div>
 
-      <div className={styles.balanceCard}>
+      <div className={`${styles.balanceCard} ${isBusiness ? styles.balanceCardBusiness : styles.balanceCardPersonal}`}>
+        <div className={styles.cardTop}>
+          <span className={styles.cardType}>
+            {isBusiness ? <IconBuilding width={18} height={18} /> : <IconUser width={18} height={18} />}
+            {accountDisplayName(account)}
+          </span>
+          {account.isPrimary && <span className={styles.primaryPill}>Primary</span>}
+        </div>
+        <span className={styles.statusPill}>{account.status}</span>
+
+        {editingNickname ? (
+          <form className={styles.nicknameForm} onSubmit={handleSaveNickname}>
+            <input
+              className={`input ${styles.nicknameInput}`}
+              placeholder="e.g. Shop takings"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              maxLength={40}
+              autoFocus
+            />
+            <button type="submit" className={styles.solidBtn} disabled={savingNickname}>
+              {savingNickname ? 'Saving…' : 'Save'}
+            </button>
+            <button type="button" className={styles.ghostBtn} onClick={() => setEditingNickname(false)}>
+              Cancel
+            </button>
+          </form>
+        ) : (
+          <button type="button" className={styles.renameLink} onClick={() => setEditingNickname(true)}>
+            {account.nickname ? 'Rename' : 'Add a nickname'}
+          </button>
+        )}
+
         <div className={styles.balanceLabel}>Balance</div>
-        <div className={styles.balanceValue}>{formatRupees(balanceMinor)}</div>
+        <div className={styles.balanceMaskedRow}>
+          <div className={styles.balanceValue}>{balanceMinor !== null ? formatRupees(balanceMinor) : '•••••••'}</div>
+          {balanceMinor !== null ? (
+            <button type="button" className={styles.checkBtn} onClick={() => setBalanceMinor(null)}>
+              Hide
+            </button>
+          ) : (
+            !checkingBalance && (
+              <button type="button" className={styles.checkBtn} onClick={() => setCheckingBalance(true)}>
+                Check balance
+              </button>
+            )
+          )}
+        </div>
+
+        {checkingBalance && (
+          <div className={styles.pinPrompt}>
+            <div className={styles.pinPromptLabel}>Enter this account's T-PIN</div>
+            <div className={styles.pinPromptRow}>
+              <OtpInput value={balancePin} onChange={setBalancePin} length={4} masked />
+              <div className={styles.pinPromptActions}>
+                <button
+                  type="button"
+                  className={styles.solidBtn}
+                  onClick={handleCheckBalance}
+                  disabled={balancePin.length < 4 || verifyingBalance}
+                >
+                  {verifyingBalance ? 'Checking…' : 'Verify'}
+                </button>
+                <button
+                  type="button"
+                  className={styles.ghostBtn}
+                  onClick={() => {
+                    setCheckingBalance(false);
+                    setBalancePin('');
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <form className={styles.depositRow} onSubmit={handleDeposit}>
           <span className={styles.prefix}>₹</span>
           <input
@@ -168,33 +282,18 @@ export function AccountDetailPage() {
       </div>
 
       <div className="card">
-        <h2>T-PIN</h2>
-        <p className="text-muted">This PIN is required every time you send money from this account.</p>
+        <h2 className={styles.pinHeading}>
+          <IconLock width={16} height={16} /> T-PIN
+        </h2>
+        <p className="text-muted">This PIN is required every time you send money or check the balance on this account.</p>
         <form className={styles.pinForm} onSubmit={handleSavePin}>
           <div className="field">
-            <label htmlFor="currentPin">Current PIN (leave blank if none set yet)</label>
-            <input
-              id="currentPin"
-              type="password"
-              inputMode="numeric"
-              maxLength={4}
-              className="input"
-              value={currentPin}
-              onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-            />
+            <label>Current PIN (leave blank if none set yet)</label>
+            <OtpInput value={currentPin} onChange={setCurrentPin} length={4} masked />
           </div>
           <div className="field">
-            <label htmlFor="newPin">New 4-digit PIN</label>
-            <input
-              id="newPin"
-              type="password"
-              inputMode="numeric"
-              maxLength={4}
-              className="input"
-              value={newPin}
-              onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-              required
-            />
+            <label>New 4-digit PIN</label>
+            <OtpInput value={newPin} onChange={setNewPin} length={4} masked />
           </div>
           <button type="submit" className="btn btn-primary" disabled={savingPin || newPin.length < 4}>
             {savingPin ? 'Saving…' : 'Save PIN'}

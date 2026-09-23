@@ -12,16 +12,20 @@ export interface Account {
   type: AccountType;
   status: AccountStatus;
   isPrimary: boolean;
+  nickname: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface AccountWithBalance {
+// No balanceMinor here on purpose — a balance is never sent to the client
+// until checkBalance() succeeds with that account's T-PIN.
+export interface AccountSummary {
   id: string;
   type: AccountType;
   status: AccountStatus;
+  isPrimary: boolean;
+  nickname: string | null;
   createdAt: string;
-  balanceMinor: number;
 }
 
 export interface LedgerEntry {

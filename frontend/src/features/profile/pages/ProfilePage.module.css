@@ -1,0 +1,77 @@
+.wrapper {
+  padding: var(--space-6) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.headerCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  background: var(--gradient-brand);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-md);
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 24px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.name {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.rolePill {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.detailRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detailRow:last-child {
+  border-bottom: none;
+}
+
+.detailLabel {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.detailValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.editActions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}

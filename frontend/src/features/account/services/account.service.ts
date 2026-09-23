@@ -7,8 +7,8 @@ export const accountService = {
     return data.data;
   },
 
-  async startCreate(type: AccountType): Promise<{ message: string; expiresInSeconds: number }> {
-    const { data } = await httpClient.post('/api/v1/accounts/start', { type });
+  async startCreate(type: AccountType, nickname?: string): Promise<{ message: string; expiresInSeconds: number }> {
+    const { data } = await httpClient.post('/api/v1/accounts/start', { type, nickname });
     return data.data;
   },
 
@@ -17,8 +17,10 @@ export const accountService = {
     return data.data;
   },
 
-  async getBalance(accountId: string): Promise<{ balanceMinor: number }> {
-    const { data } = await httpClient.get(`/api/v1/accounts/${accountId}/balance`);
+  // The only way a balance figure ever reaches the client — requires
+  // this specific account's T-PIN, same as a real UPI "Check Balance".
+  async checkBalance(accountId: string, tPin: string): Promise<{ balanceMinor: number }> {
+    const { data } = await httpClient.post(`/api/v1/accounts/${accountId}/check-balance`, { tPin });
     return data.data;
   },
 
@@ -33,5 +35,9 @@ export const accountService = {
 
   async setPin(accountId: string, newTPin: string, currentTPin?: string): Promise<void> {
     await httpClient.patch(`/api/v1/accounts/${accountId}/pin`, { newTPin, currentTPin });
+  },
+
+  async setNickname(accountId: string, nickname: string | null): Promise<void> {
+    await httpClient.patch(`/api/v1/accounts/${accountId}/nickname`, { nickname });
   },
 };

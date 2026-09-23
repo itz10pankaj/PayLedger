@@ -7,6 +7,7 @@ const key = (userId: string) => `account-otp:${userId}`;
 export interface PendingAccount {
   otp: string;
   type: AccountType;
+  nickname: string | null;
 }
 
 // Nothing is written to Postgres until the phone OTP is verified — same

@@ -9,6 +9,8 @@ import { ExpensesPage } from '../features/dashboard/pages/ExpensesPage';
 import { AccountsPage } from '../features/account/pages/AccountsPage';
 import { AccountDetailPage } from '../features/account/pages/AccountDetailPage';
 import { SendMoneyPage } from '../features/payment/pages/SendMoneyPage';
+import { ProfilePage } from '../features/profile/pages/ProfilePage';
+import { HelpPage } from '../features/help/pages/HelpPage';
 
 // New feature areas get their own <Route> here, pointing at that
 // feature's own pages/ folder.
@@ -28,6 +30,8 @@ export function AppRoutes() {
           <Route path="/transactions" element={<TransactionsPage />} />
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/send" element={<SendMoneyPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/help" element={<HelpPage />} />
         </Route>
       </Route>
     </Routes>

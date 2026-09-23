@@ -17,6 +17,12 @@ Request path: **frontend → gateway → backend**. The frontend never calls the
 
 Signup is the same OTP pattern, but the account isn't created in Postgres until the phone OTP is verified — see `gateway/src/modules/user`.
 
+Every profile route (`GET/PATCH /users/me`) operates on the caller's own record only — there's no `:id` param anywhere, deliberately. An earlier version took an arbitrary id with just `authenticate` guarding it, which let any logged-in user view or edit *anyone's* profile. Nothing in this app has a legitimate reason to look up another user's profile, so the fix was removing the capability, not bolting on an ownership check.
+
+**Balances are never sent to the client for free.** `GET /dashboard/overview` and `GET /accounts/:id` return account metadata (type, status, nickname, primary flag) but no balance figure — same as opening a real UPI app doesn't show your balance until you ask. Seeing a number requires an explicit, PIN-gated action: `POST /accounts/:id/check-balance` (that account's own T-PIN) for one account, or `POST /dashboard/check-balances` (the *primary* account's T-PIN) for the dashboard's total-plus-per-account summary in one shot. Sending money already required a T-PIN; this closes the other place a balance leaked out for free.
+
+Accounts can have a `nickname` (set at creation or renamed later) so two accounts of the same type are distinguishable — falls back to a masked id suffix (`Personal •••• a89f`) when none is set.
+
 Round-robin load balancing across multiple backend instances plugs into `gateway/src/common/proxy/backendTargetPicker.ts` later — add more comma-separated `BACKEND_TARGETS` and it starts fanning out with no code change.
 
 ## Backend & gateway: module layout
@@ -75,7 +81,7 @@ src/
         └── types/
 ```
 
-`features/auth` is the template — copy it for new features, then add its routes in `src/app/routes.tsx`. Current features: `auth`, `user` (signup), `account` (list/create/detail), `payment` (send money), `dashboard` (overview, all-transactions, expenses — the dashboard backend module's three read endpoints, one page each). `components/TransactionList` is shared by all three of those dashboard pages plus the account detail page, since "a list of entries, optionally taggable" is the same UI everywhere it appears.
+`features/auth` is the template — copy it for new features, then add its routes in `src/app/routes.tsx`. Current features: `auth`, `user` (signup), `account` (list/create/detail — balance is check-on-demand, not shown on load), `payment` (send money, PIN-protected), `dashboard` (overview, all-transactions, expenses), `profile` (view/edit your own name+email), `help` (static FAQ + fee schedule). `components/TransactionList` is shared by the dashboard, account detail, and transactions pages, since "a list of entries, optionally taggable" is the same UI everywhere it appears. `utils/accountDisplayName` picks an account's nickname if set, else a masked-id fallback — used everywhere an account needs a human-readable label.
 
 The expenses chart follows the `dataviz` skill: a direct-labeled horizontal bar chart (no legend needed — each bar is labeled with its own category name), using the skill's validated 8-hue categorical palette (light mode only, since this app doesn't support dark mode) with colors assigned by each category's **fixed position** in the category list — never reassigned when a filter changes. The category list has 11 entries but the palette only validates 8 hues; the remaining 3 (`Transfer`, `Income`, `Other`) deliberately render in muted gray rather than inventing an unvalidated 9th hue.
 

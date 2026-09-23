@@ -11,11 +11,13 @@ export const dashboardController = {
   }),
 
   transactions: asyncHandler(async (req: Request, res: Response) => {
-    const { accountId, category, month, limit, offset } = req.query;
+    const { accountId, category, month, from, to, limit, offset } = req.query;
     const data = await dashboardService.getTransactions(req.user!.userId, {
       accountId: typeof accountId === 'string' ? accountId : undefined,
       category: typeof category === 'string' ? category : undefined,
       month: typeof month === 'string' ? month : undefined,
+      from: typeof from === 'string' ? from : undefined,
+      to: typeof to === 'string' ? to : undefined,
       limit: limit ? Number(limit) : undefined,
       offset: offset ? Number(offset) : undefined,
     });
@@ -42,5 +44,37 @@ export const dashboardController = {
 
   categories: asyncHandler(async (_req: Request, res: Response) => {
     res.status(200).json({ data: EXPENSE_CATEGORIES });
+  }),
+
+  budgetOverview: asyncHandler(async (req: Request, res: Response) => {
+    const month = req.query.month;
+    if (typeof month !== 'string') {
+      throw ApiError.badRequest('month query param (YYYY-MM) is required');
+    }
+    const data = await dashboardService.getBudgetOverview(req.user!.userId, month);
+    res.status(200).json({ data });
+  }),
+
+  setBudget: asyncHandler(async (req: Request, res: Response) => {
+    const { limitMinor } = req.body;
+    if (typeof limitMinor !== 'number') {
+      throw ApiError.badRequest('limitMinor is required');
+    }
+    const data = await dashboardService.setBudget(req.user!.userId, req.params.category, limitMinor, req.user!.userId);
+    res.status(200).json({ data });
+  }),
+
+  removeBudget: asyncHandler(async (req: Request, res: Response) => {
+    await dashboardService.removeBudget(req.user!.userId, req.params.category);
+    res.status(204).send();
+  }),
+
+  financialHealth: asyncHandler(async (req: Request, res: Response) => {
+    const month = req.query.month;
+    if (typeof month !== 'string') {
+      throw ApiError.badRequest('month query param (YYYY-MM) is required');
+    }
+    const data = await dashboardService.getFinancialHealth(req.user!.userId, month);
+    res.status(200).json({ data });
   }),
 };
