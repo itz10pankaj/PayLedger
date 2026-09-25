@@ -206,6 +206,15 @@ export function IconX(props: IconProps) {
   );
 }
 
+export function IconKey(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="7.5" cy="15.5" r="5.5" />
+      <path d="m10.5 12.5 8-8M15.5 7.5l3 3M18.5 4.5l3 3" />
+    </svg>
+  );
+}
+
 export function IconStar(props: IconProps) {
   return (
     <svg {...base} {...props} fill="currentColor" stroke="none">

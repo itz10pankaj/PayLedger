@@ -6,12 +6,14 @@ import { OtpInput } from '../../../components/OtpInput';
 import { useToast } from '../../../components/Toast/ToastProvider';
 import { formatRupees } from '../../../utils/money';
 import { accountDisplayName } from '../../../utils/accountDisplay';
-import { IconUser, IconBuilding, IconLock } from '../../../components/icons';
+import { IconUser, IconBuilding, IconLock, IconKey } from '../../../components/icons';
 import { accountService } from '../services/account.service';
 import { dashboardService } from '../../dashboard/services/dashboard.service';
 import { paymentService } from '../../payment/services/payment.service';
+import { gatewayService } from '../../gateway/services/gateway.service';
 import type { Account } from '../types/account.types';
 import type { TaggedEntry } from '../../dashboard/types/dashboard.types';
+import type { ApiKeySummary, WebhookConfig } from '../../gateway/types/gateway.types';
 import styles from './AccountDetailPage.module.css';
 
 export function AccountDetailPage() {
@@ -34,6 +36,13 @@ export function AccountDetailPage() {
   const [editingNickname, setEditingNickname] = useState(false);
   const [nickname, setNickname] = useState('');
   const [savingNickname, setSavingNickname] = useState(false);
+  const [apiKeys, setApiKeys] = useState<ApiKeySummary[]>([]);
+  const [issuingKey, setIssuingKey] = useState(false);
+  const [revealedSecret, setRevealedSecret] = useState<{ keyId: string; secret: string } | null>(null);
+  const [webhookConfig, setWebhookConfig] = useState<WebhookConfig | null>(null);
+  const [webhookUrlInput, setWebhookUrlInput] = useState('');
+  const [savingWebhook, setSavingWebhook] = useState(false);
+  const [showWebhookSecret, setShowWebhookSecret] = useState(false);
 
   function load() {
     if (!id) return Promise.resolve();
@@ -55,6 +64,64 @@ export function AccountDetailPage() {
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  useEffect(() => {
+    if (!id || account?.type !== 'merchant') return;
+    gatewayService.listApiKeys(id).then(setApiKeys);
+    gatewayService.getWebhookConfig(id).then((config) => {
+      setWebhookConfig(config);
+      setWebhookUrlInput(config?.webhookUrl ?? '');
+    });
+  }, [id, account?.type]);
+
+  async function copyToClipboard(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('Copied to clipboard', 'success');
+    } catch {
+      showToast('Could not copy', 'error');
+    }
+  }
+
+  async function handleIssueKey() {
+    if (!id) return;
+    setIssuingKey(true);
+    try {
+      const result = await gatewayService.issueApiKey(id);
+      setRevealedSecret(result);
+      setApiKeys(await gatewayService.listApiKeys(id));
+    } catch {
+      showToast('Could not generate API key', 'error');
+    } finally {
+      setIssuingKey(false);
+    }
+  }
+
+  async function handleRevokeKey(keyRowId: string) {
+    if (!id) return;
+    try {
+      await gatewayService.revokeApiKey(id, keyRowId);
+      setApiKeys(await gatewayService.listApiKeys(id));
+      showToast('API key revoked', 'success');
+    } catch {
+      showToast('Could not revoke key', 'error');
+    }
+  }
+
+  async function handleSaveWebhook(e: FormEvent) {
+    e.preventDefault();
+    if (!id) return;
+    setSavingWebhook(true);
+    try {
+      const config = await gatewayService.setWebhookUrl(id, webhookUrlInput);
+      setWebhookConfig(config);
+      showToast('Webhook saved', 'success');
+    } catch {
+      showToast('Could not save webhook URL', 'error');
+    } finally {
+      setSavingWebhook(false);
+    }
+  }
 
   async function handleTag(entryId: string, category: string) {
     const previous = transactions;
@@ -281,7 +348,7 @@ export function AccountDetailPage() {
         </form>
       </div>
 
-      <div className="card">
+      <div className={styles.sectionCard}>
         <h2 className={styles.pinHeading}>
           <IconLock width={16} height={16} /> T-PIN
         </h2>
@@ -301,7 +368,99 @@ export function AccountDetailPage() {
         </form>
       </div>
 
-      <div className="card">
+      {isBusiness && (
+        <div className={styles.sectionCard}>
+          <h2 className={styles.pinHeading}>
+            <IconKey width={16} height={16} /> Merchant API
+          </h2>
+          <p className="text-muted">
+            Let your own server create payment requests against this account and get notified when they're paid.
+          </p>
+
+          <div className={styles.apiKeysBlock}>
+            <div className={styles.apiKeysHeader}>
+              <h3>API keys</h3>
+              <button type="button" className="btn btn-primary" onClick={handleIssueKey} disabled={issuingKey}>
+                {issuingKey ? 'Generating…' : 'Generate new key'}
+              </button>
+            </div>
+
+            {revealedSecret && (
+              <div className={styles.secretReveal}>
+                <div className={styles.secretRevealWarning}>
+                  Copy this now — it won't be shown again: <strong>{revealedSecret.keyId}</strong>
+                </div>
+                <div className={styles.secretRow}>
+                  <code className={styles.secretCode}>{revealedSecret.secret}</code>
+                  <button type="button" className="btn-link" onClick={() => copyToClipboard(revealedSecret.secret)}>
+                    Copy
+                  </button>
+                </div>
+                <button type="button" className="btn-link" onClick={() => setRevealedSecret(null)}>
+                  Done
+                </button>
+              </div>
+            )}
+
+            {apiKeys.length === 0 ? (
+              <p className="text-muted">No API keys yet.</p>
+            ) : (
+              <div className={styles.apiKeyList}>
+                {apiKeys.map((k) => (
+                  <div key={k.id} className={styles.apiKeyRow}>
+                    <code className={styles.apiKeyId}>{k.keyId}</code>
+                    <span className={`${styles.statusBadge} ${k.status === 'active' ? styles.statusActive : styles.statusRevoked}`}>
+                      {k.status}
+                    </span>
+                    <span className={styles.apiKeyDate}>{new Date(k.createdAt).toLocaleDateString()}</span>
+                    {k.status === 'active' && (
+                      <button type="button" className="btn-link" onClick={() => handleRevokeKey(k.id)}>
+                        Revoke
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className={styles.webhookBlock}>
+            <h3>Webhook</h3>
+            <p className="text-muted">
+              We'll POST payment-intent updates here, signed so your server can verify they came from us.
+            </p>
+            <form className={styles.webhookForm} onSubmit={handleSaveWebhook}>
+              <input
+                type="url"
+                className="input"
+                placeholder="https://your-server.com/webhooks/payledger"
+                value={webhookUrlInput}
+                onChange={(e) => setWebhookUrlInput(e.target.value)}
+                required
+              />
+              <button type="submit" className="btn btn-primary" disabled={savingWebhook}>
+                {savingWebhook ? 'Saving…' : 'Save'}
+              </button>
+            </form>
+            {webhookConfig && (
+              <div className={styles.webhookSecretRow}>
+                <span className="text-muted">Signing secret:</span>
+                <code className={styles.secretCode}>
+                  {showWebhookSecret ? webhookConfig.webhookSecret : '•'.repeat(20)}
+                </code>
+                <button type="button" className="btn-link" onClick={() => setShowWebhookSecret((v) => !v)}>
+                  {showWebhookSecret ? 'Hide' : 'Show'}
+                </button>
+                <button type="button" className="btn-link" onClick={() => copyToClipboard(webhookConfig.webhookSecret)}>
+                  Copy
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className={styles.sectionCard}>
         <h2>Transaction history</h2>
         <TransactionList
           transactions={transactions}
