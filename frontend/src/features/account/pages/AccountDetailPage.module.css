@@ -266,6 +266,15 @@
   margin: 0;
 }
 
+.requestConfirm {
+  margin-top: var(--space-3);
+  padding: 10px var(--space-3);
+  font-size: 13px;
+  color: var(--color-success);
+  background: #ecfdf3;
+  border-radius: var(--radius-sm);
+}
+
 .secretReveal {
   margin-top: var(--space-4);
   padding: var(--space-4);
@@ -345,6 +354,7 @@
   color: var(--color-text-subtle);
   background: var(--color-surface-sunken);
 }
+
 
 .webhookBlock {
   margin-top: var(--space-6);

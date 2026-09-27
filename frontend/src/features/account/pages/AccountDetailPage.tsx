@@ -5,6 +5,7 @@ import { TransactionList } from '../../../components/TransactionList';
 import { OtpInput } from '../../../components/OtpInput';
 import { useToast } from '../../../components/Toast/ToastProvider';
 import { formatRupees } from '../../../utils/money';
+import { formatMinutesRemaining } from '../../../utils/date';
 import { accountDisplayName } from '../../../utils/accountDisplay';
 import { IconUser, IconBuilding, IconLock, IconKey } from '../../../components/icons';
 import { accountService } from '../services/account.service';
@@ -13,7 +14,7 @@ import { paymentService } from '../../payment/services/payment.service';
 import { gatewayService } from '../../gateway/services/gateway.service';
 import type { Account } from '../types/account.types';
 import type { TaggedEntry } from '../../dashboard/types/dashboard.types';
-import type { ApiKeySummary, WebhookConfig } from '../../gateway/types/gateway.types';
+import type { ApiKeySummary, CreatedPaymentIntent, WebhookConfig } from '../../gateway/types/gateway.types';
 import styles from './AccountDetailPage.module.css';
 
 export function AccountDetailPage() {
@@ -43,6 +44,10 @@ export function AccountDetailPage() {
   const [webhookUrlInput, setWebhookUrlInput] = useState('');
   const [savingWebhook, setSavingWebhook] = useState(false);
   const [showWebhookSecret, setShowWebhookSecret] = useState(false);
+  const [requestPhone, setRequestPhone] = useState('');
+  const [requestAmount, setRequestAmount] = useState('');
+  const [creatingRequest, setCreatingRequest] = useState(false);
+  const [createdRequest, setCreatedRequest] = useState<CreatedPaymentIntent | null>(null);
 
   function load() {
     if (!id) return Promise.resolve();
@@ -120,6 +125,24 @@ export function AccountDetailPage() {
       showToast('Could not save webhook URL', 'error');
     } finally {
       setSavingWebhook(false);
+    }
+  }
+
+  async function handleCreateRequest(e: FormEvent) {
+    e.preventDefault();
+    if (!id) return;
+    setCreatingRequest(true);
+    try {
+      const amountMinor = Math.round(Number(requestAmount) * 100);
+      const intent = await gatewayService.createPaymentRequest(id, requestPhone, amountMinor);
+      setCreatedRequest(intent);
+      setRequestPhone('');
+      setRequestAmount('');
+      showToast('Payment request sent', 'success');
+    } catch {
+      showToast('Could not create the request — check the phone number', 'error');
+    } finally {
+      setCreatingRequest(false);
     }
   }
 
@@ -376,6 +399,46 @@ export function AccountDetailPage() {
           <p className="text-muted">
             Let your own server create payment requests against this account and get notified when they're paid.
           </p>
+
+          <div className={styles.apiKeysBlock}>
+            <h3>Request a payment</h3>
+            <p className="text-muted">
+              Ask a customer's phone number to pay this account — they'll see it in their own app to approve or decline.
+              This does the same thing your server would do via the API, for testing without one.
+            </p>
+            <form className={styles.webhookForm} onSubmit={handleCreateRequest}>
+              <input
+                type="tel"
+                className="input"
+                placeholder="Customer phone number"
+                value={requestPhone}
+                onChange={(e) => setRequestPhone(e.target.value)}
+                required
+              />
+              <input
+                type="number"
+                min="1"
+                step="0.01"
+                className="input"
+                placeholder="Amount (₹)"
+                value={requestAmount}
+                onChange={(e) => setRequestAmount(e.target.value)}
+                required
+              />
+              <button type="submit" className="btn btn-primary" disabled={creatingRequest}>
+                {creatingRequest ? 'Sending…' : 'Send request'}
+              </button>
+            </form>
+            {createdRequest && (
+              <p className={styles.requestConfirm}>
+                Sent — {formatRupees(createdRequest.amountMinor)} requested from {createdRequest.payerPhone}, expires{' '}
+                {formatMinutesRemaining(createdRequest.expiresAt)}.
+              </p>
+            )}
+            <Link to="/payment-requests?tab=sent" className="btn-link">
+              View all requests you've sent →
+            </Link>
+          </div>
 
           <div className={styles.apiKeysBlock}>
             <div className={styles.apiKeysHeader}>

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Outlet, Link, NavLink } from 'react-router-dom';
+import { Outlet, Link, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../features/auth/context/AuthContext';
 import { profileService } from '../features/profile/services/profile.service';
+import { gatewayService } from '../features/gateway/services/gateway.service';
 import {
   IconUser,
   IconHome,
@@ -13,11 +14,13 @@ import {
   IconSearch,
   IconBell,
   IconChevronDown,
+  IconInbox,
 } from './icons';
 import styles from './Layout.module.css';
 
 const NAV_LINKS = [
   { to: '/dashboard', label: 'Dashboard', icon: IconHome },
+  { to: '/payment-requests', label: 'Requests', icon: IconInbox },
   { to: '/accounts', label: 'Accounts', icon: IconWallet },
   { to: '/transactions', label: 'Transactions', icon: IconSwap },
   { to: '/expenses', label: 'Expenses', icon: IconPieChart },
@@ -79,6 +82,25 @@ function UserMenu({ onLogout }: { onLogout: () => void }) {
 
 export function Layout() {
   const { user, logout } = useAuth();
+  const location = useLocation();
+  const [pendingRequestCount, setPendingRequestCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    function refresh() {
+      gatewayService
+        .listPendingPaymentRequests()
+        .then((requests) => setPendingRequestCount(requests.length))
+        .catch(() => {});
+    }
+    refresh();
+    // Requests expire in 15 minutes and someone else's app can approve/
+    // decline one from outside this tab entirely, so a short poll (plus
+    // a refetch whenever the route changes) keeps the badge honest
+    // without needing a push channel for something this low-stakes.
+    const interval = setInterval(refresh, 20_000);
+    return () => clearInterval(interval);
+  }, [user, location.pathname]);
 
   return (
     <div className={styles.shell}>
@@ -97,6 +119,9 @@ export function Layout() {
               >
                 <link.icon width={18} height={18} />
                 {link.label}
+                {link.to === '/payment-requests' && pendingRequestCount > 0 && (
+                  <span className={styles.navBadge}>{pendingRequestCount}</span>
+                )}
               </NavLink>
             ))}
           </nav>

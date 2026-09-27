@@ -9,6 +9,17 @@ export function formatDateTime(iso: string): string {
   });
 }
 
+// For a timestamp still ahead of now (an expiry), not behind it —
+// formatRelativeTime assumes the past and would misreport "Just now" for
+// something 15 minutes away.
+export function formatMinutesRemaining(iso: string): string {
+  const diffMs = new Date(iso).getTime() - Date.now();
+  const diffMins = Math.round(diffMs / 60000);
+  if (diffMins <= 0) return 'expired';
+  if (diffMins === 1) return 'in 1 minute';
+  return `in ${diffMins} minutes`;
+}
+
 export function formatRelativeTime(iso: string): string {
   const date = new Date(iso);
   const now = new Date();

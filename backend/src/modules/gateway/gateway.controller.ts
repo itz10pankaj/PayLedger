@@ -32,4 +32,26 @@ export const gatewayController = {
     const data = await gatewayService.getWebhookConfig(req.params.accountId, req.user!.userId);
     res.status(200).json({ data });
   }),
+
+  createPaymentIntent: asyncHandler(async (req: Request, res: Response) => {
+    const { payerPhone, amountMinor } = req.body;
+    if (!payerPhone || !amountMinor) {
+      throw ApiError.badRequest('payerPhone and amountMinor are required');
+    }
+    const intent = await gatewayService.createPaymentIntentAsOwner(
+      req.params.accountId,
+      req.user!.userId,
+      payerPhone,
+      Number(amountMinor)
+    );
+    res.status(201).json({
+      data: {
+        id: intent.id,
+        status: intent.status,
+        payerPhone: intent.payerPhone,
+        amountMinor: intent.amountMinor,
+        expiresAt: intent.expiresAt,
+      },
+    });
+  }),
 };

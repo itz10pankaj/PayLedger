@@ -82,6 +82,21 @@
   background: rgba(255, 255, 255, 0.12);
 }
 
+.navBadge {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--color-danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .sidebarFooter {
   margin-top: auto;
   display: flex;

@@ -1,3 +1,11 @@
 export { issueApiKey, listApiKeys, revokeApiKey } from './apiKey.service';
 export { setWebhookUrl, getWebhookConfig } from './webhook.service';
-export { createPaymentIntent, listPendingForPhone, approvePaymentIntent, declinePaymentIntent } from './paymentIntent.service';
+export {
+  createPaymentIntent,
+  createPaymentIntentAsOwner,
+  listPendingForPhone,
+  approvePaymentIntent,
+  declinePaymentIntent,
+  listHistoryForPhone,
+  listSentForUser,
+} from './paymentIntent.service';

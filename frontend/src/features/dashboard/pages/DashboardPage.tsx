@@ -18,9 +18,11 @@ import {
   IconCheckCircle,
   IconAlertTriangle,
   IconX,
+  IconArrowDownLeft,
 } from '../../../components/icons';
 import { accountService } from '../../account/services/account.service';
 import { dashboardService } from '../services/dashboard.service';
+import { RequestMoneyModal } from '../../gateway/components/RequestMoneyModal';
 import type { BudgetOverview, DashboardOverview, FinancialHealth, MonthlyExpenses } from '../types/dashboard.types';
 import styles from './DashboardPage.module.css';
 
@@ -28,7 +30,6 @@ const QUICK_ACTIONS = [
   { to: '/send', label: 'Send', icon: IconSend },
   { to: '/accounts', label: 'Add money', icon: IconPlus },
   { to: '/accounts', label: 'Accounts', icon: IconWallet },
-  { to: '/expenses', label: 'Expenses', icon: IconBuilding },
 ];
 
 function currentMonth(): string {
@@ -61,6 +62,7 @@ export function DashboardPage() {
   const [newBudgetCategory, setNewBudgetCategory] = useState('');
   const [newBudgetAmount, setNewBudgetAmount] = useState('');
   const [savingBudget, setSavingBudget] = useState(false);
+  const [showRequestModal, setShowRequestModal] = useState(false);
 
   const month = currentMonth();
 
@@ -279,8 +281,16 @@ export function DashboardPage() {
               {action.label}
             </Link>
           ))}
+          <button type="button" className={styles.quickAction} onClick={() => setShowRequestModal(true)}>
+            <span className={styles.quickActionIcon}>
+              <IconArrowDownLeft width={18} height={18} />
+            </span>
+            Request money
+          </button>
         </div>
       </div>
+
+      <RequestMoneyModal open={showRequestModal} onClose={() => setShowRequestModal(false)} />
 
       <div className={styles.section}>
         <div className={styles.sectionHeader}>

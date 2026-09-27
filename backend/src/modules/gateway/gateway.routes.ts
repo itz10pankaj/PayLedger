@@ -19,3 +19,4 @@ gatewayRoutes.get('/accounts/:accountId/api-keys', gatewayController.listApiKeys
 gatewayRoutes.delete('/accounts/:accountId/api-keys/:id', gatewayController.revokeApiKey);
 gatewayRoutes.put('/accounts/:accountId/webhook', gatewayController.setWebhook);
 gatewayRoutes.get('/accounts/:accountId/webhook', gatewayController.getWebhook);
+gatewayRoutes.post('/accounts/:accountId/payment-intents', gatewayController.createPaymentIntent);

@@ -25,14 +25,40 @@ export const paymentIntentRepository = {
     return PaymentIntent.findAll({ where: { payerPhone: phone, status: 'pending' }, order: [['createdAt', 'DESC']] });
   },
 
+  // "What did I approve or reject" — ordered by updatedAt, not
+  // createdAt, since that's when the status actually changed (approved/
+  // declined/expired), which is what a history view is answering.
+  async listResolvedByPhone(phone: string, limit: number): Promise<PaymentIntent[]> {
+    return PaymentIntent.findAll({
+      where: { payerPhone: phone, status: { [Op.ne]: 'pending' } },
+      order: [['updatedAt', 'DESC']],
+      limit,
+    });
+  },
+
+  // "What have I requested" — across every merchant account a user owns,
+  // every status at once, most recently created first.
+  async listByMerchantAccountIds(merchantAccountIds: string[], limit: number): Promise<PaymentIntent[]> {
+    if (merchantAccountIds.length === 0) return [];
+    return PaymentIntent.findAll({
+      where: { merchantAccountId: { [Op.in]: merchantAccountIds } },
+      order: [['createdAt', 'DESC']],
+      limit,
+    });
+  },
+
   // Flips pending → expired for every stale row at once — a cheap
   // lazy sweep run whenever someone lists their pending requests,
-  // standing in for a proper scheduled job.
-  async expireAllStale(): Promise<void> {
-    await PaymentIntent.update(
+  // standing in for a proper scheduled job. Returns the rows it actually
+  // flipped so the caller can enqueue a webhook delivery for each one —
+  // a blanket UPDATE with no way to tell what just changed would leave
+  // merchants never finding out their request timed out.
+  async expireAllStale(): Promise<PaymentIntent[]> {
+    const [, rows] = await PaymentIntent.update(
       { status: 'expired' },
-      { where: { status: 'pending', expiresAt: { [Op.lt]: new Date() } } }
+      { where: { status: 'pending', expiresAt: { [Op.lt]: new Date() } }, returning: true }
     );
+    return rows;
   },
 
   async expireIfPending(id: string): Promise<boolean> {
